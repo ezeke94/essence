@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Typography, Paper, Box, Select, MenuItem, Button, FormControl, InputLabel, Grid, TextField, Autocomplete, Divider } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { format, startOfWeek, isValid } from 'date-fns';
-import { getSessionNameById } from '../data/mockData'; // Import helper
+import { addReport } from './DailyReportsManagementPage';
 
-function DailyReportPage({ data, addDailyReport }) {
+function DailyReportPage({ data, onReportSubmitted }) {
     const { students, mentors, sessions, weeklyPlans } = data; // Add weeklyPlans
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedStudentId, setSelectedStudentId] = useState('');
@@ -72,24 +72,52 @@ function DailyReportPage({ data, addDailyReport }) {
             studentId: selectedStudentId,
             mentorId: selectedMentorId,
             demeanor: demeanor,
-            sessionsCompleted: {
-                body: completedBody.sessionId ? completedBody : null,
-                mind: completedMind.sessionId ? completedMind : null,
-                intellect: {
-                    english: completedEnglish.sessionId ? completedEnglish : null,
-                    math: completedMath.sessionId ? completedMath : null,
-                    science: completedScience.sessionId ? completedScience : null,
-                },
-                cbcs: completedCbcs.sessionId ? completedCbcs : null,
-                lifeSkills: completedLifeSkills.sessionId ? completedLifeSkills : null,
+            completedSessions: {
+                body: completedBody.sessionId ? {
+                    sessionId: completedBody.sessionId,
+                    details: completedBody.details
+                } : null,
+                mind: completedMind.sessionId ? {
+                    sessionId: completedMind.sessionId,
+                    details: completedMind.details
+                } : null,
+                english: completedEnglish.sessionId ? {
+                    sessionId: completedEnglish.sessionId,
+                    details: completedEnglish.details
+                } : null,
+                math: completedMath.sessionId ? {
+                    sessionId: completedMath.sessionId,
+                    details: completedMath.details
+                } : null,
+                science: completedScience.sessionId ? {
+                    sessionId: completedScience.sessionId,
+                    details: completedScience.details
+                } : null,
+                cbcs: completedCbcs.sessionId ? {
+                    sessionId: completedCbcs.sessionId,
+                    details: completedCbcs.details
+                } : null,
+                lifeSkills: completedLifeSkills.sessionId ? {
+                    sessionId: completedLifeSkills.sessionId,
+                    details: completedLifeSkills.details
+                } : null
             }
         };
 
-        addDailyReport(report); // Call function passed from App.js to update state
-        alert('Report Submitted!');
-        // Reset form (optional)
+        console.log('Saving report:', report);
+        const savedReport = addReport(report);
+        console.log('Saved report:', savedReport);
+
+        if (onReportSubmitted) {
+            onReportSubmitted(savedReport);
+        }
+
+        alert('Report Submitted Successfully!');
+        resetForm();
+    };
+
+    const resetForm = () => {
         setSelectedStudentId('');
-        // setSelectedMentorId(''); // Keep mentor maybe?
         setDemeanor('');
         setCompletedBody({ sessionId: '', details: '' });
         setCompletedMind({ sessionId: '', details: '' });

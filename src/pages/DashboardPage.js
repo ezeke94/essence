@@ -1,7 +1,7 @@
 import React from 'react';
-import { Typography, Paper, Grid, Box, List, ListItem, ListItemText, Divider, Card, CardContent, Chip } from '@mui/material';
-import { format, getDay, parseISO, startOfWeek, addDays } from 'date-fns'; // Assuming Sunday is start of week for date-fns
-import { getStudentNames, getMentorName, getSessionNameById, getAcademicSessionDetails } from '../data/mockData'; // Import helpers
+import { Typography, Paper, Box, List, ListItem, ListItemText, Divider, Card, CardContent, Chip } from '@mui/material';
+import { format, getDay, startOfWeek } from 'date-fns'; // Assuming Sunday is start of week for date-fns
+import { getMentorName, getAcademicSessionDetails } from '../data/mockData'; // Import helpers
 
 const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']; // Match mock data keys
 const slotLabels = {
@@ -12,15 +12,6 @@ const slotLabels = {
     session5: 'Session 5',
     session6: 'Session 6'
 };
-const sessionTypes = [
-    { id: 'body', label: 'Body' },
-    { id: 'mind', label: 'Mind' },
-    { id: 'math', label: 'Math' },
-    { id: 'science', label: 'Science' },
-    { id: 'english', label: 'English' },
-    { id: 'cbcs', label: 'CBCS' },
-    { id: 'lessonPlan', label: 'Lesson Plan' }
-];
 
 // Add this helper function before the component
 const groupAssignmentsByMentor = (assignments) => {
@@ -84,22 +75,9 @@ function DashboardPage({ data }) {
                                                 sx={{ mb: 2 }}
                                             >
                                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                                    <Typography variant="subtitle2" sx={{ mr: 2 }}>
+                                                    <Typography variant="subtitle2">
                                                         Mentor: {getMentorName(assignment.mentorId, mentors)}
                                                     </Typography>
-                                                    <Box>
-                                                        {assignment.sessionTypes.map(sessionType => (
-                                                            <Typography 
-                                                                key={sessionType}
-                                                                variant="subtitle2" 
-                                                                color="primary"
-                                                                component="span"
-                                                                sx={{ mr: 1 }}
-                                                            >
-                                                                {sessionTypes.find(t => t.id === sessionType)?.label || ''}
-                                                            </Typography>
-                                                        ))}
-                                                    </Box>
                                                 </Box>
                                                 <Divider sx={{ my: 1 }}/>
                                                 <List dense>

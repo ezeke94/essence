@@ -1,16 +1,45 @@
 // src/data/mockData.js
 
 export const mentors = [
-    { id: 'm1', name: 'Dr. Evelyn Reed' },
-    { id: 'm2', name: 'Mr. Samuel Green' },
-    { id: 'm3', name: 'Ms. Aisha Khan' },
-    { id: 'm4', name: 'Mr. Ben Carter' },
-  ];
-  
-  export const students = [
+    {
+        id: 'm1',
+        name: 'Dr. Evelyn Reed',
+        role: 'Cluster Head',
+        email: 'evelyn.reed@centre.edu',
+        contact: '555-0101',
+        assignedStudents: ['s2', 's7'] // Matches primary mentorship
+    },
+    {
+        id: 'm2',
+        name: 'Mr. Samuel Green',
+        role: 'Mentor',
+        email: 'samuel.green@centre.edu',
+        contact: '555-0102',
+        assignedStudents: ['s4'] // Matches primary mentorship
+    },
+    {
+        id: 'm3',
+        name: 'Ms. Aisha Khan',
+        role: 'Mentor',
+        email: 'aisha.khan@centre.edu',
+        contact: '555-0103',
+        assignedStudents: ['s1', 's6'] // Matches primary mentorship
+    },
+    {
+        id: 'm4',
+        name: 'Mr. Ben Carter',
+        role: 'Trainee Mentor',
+        email: 'ben.carter@centre.edu',
+        contact: '555-0104',
+        assignedStudents: ['s3', 's5'] // Matches primary mentorship
+    }
+];
+
+export const students = [
     {
       id: 's1',
       name: 'Alice Wonderland',
+      primaryMentorId: 'm3',
       grade: 5,
       demographics: { dob: '2015-06-10', address: '12 Rabbit Hole Lane', contact: '555-1234' },
       abc: {
@@ -24,6 +53,7 @@ export const mentors = [
     {
       id: 's2',
       name: 'Bob The Builder',
+      primaryMentorId: 'm1',
       grade: 6,
       demographics: { dob: '2014-02-15', address: '45 Construction Ave', contact: '555-5678' },
       abc: {
@@ -37,6 +67,7 @@ export const mentors = [
     {
       id: 's3',
       name: 'Charlie Chaplin',
+      primaryMentorId: 'm4',
       grade: 4,
       demographics: { dob: '2016-09-20', address: '78 Silent Film St', contact: '555-9012' },
       abc: {
@@ -50,6 +81,7 @@ export const mentors = [
     {
       id: 's4',
       name: 'Diana Prince',
+      primaryMentorId: 'm2',
       grade: 7,
       demographics: { dob: '2013-11-01', address: '1 Paradise Island', contact: '555-3456' },
       abc: {
@@ -63,6 +95,7 @@ export const mentors = [
     {
       id: 's5',
       name: 'Ethan Hunt',
+      primaryMentorId: 'm4',
       grade: 5,
       demographics: { dob: '2015-03-25', address: '9 Mission Road', contact: '555-7890' },
       abc: {
@@ -73,6 +106,34 @@ export const mentors = [
       grades: { english: 5, math: 6, science: 5 },
       batches: { mind: 'B', cbcs: 'B', lifeSkills: 'A' },
     },
+    {
+        id: 's6',
+        name: 'Freya Norse',
+        primaryMentorId: 'm3',
+        grade: 6,
+        demographics: { dob: '2014-08-15', address: '23 Viking Lane', contact: '555-4321' },
+        abc: {
+            antecedent: 'Complex multi-step instructions, group projects.',
+            behaviour: 'Becomes overwhelmed, shuts down, may leave activity.',
+            consequence: 'Break down instructions into smaller steps. Use visual checklist. Assign specific role in group work.'
+        },
+        grades: { english: 6, math: 5, science: 6 },
+        batches: { mind: 'B', cbcs: 'A', lifeSkills: 'B' }
+    },
+    {
+        id: 's7',
+        name: 'George Galaxy',
+        primaryMentorId: 'm1',
+        grade: 4,
+        demographics: { dob: '2016-04-05', address: '42 Starship Street', contact: '555-8765' },
+        abc: {
+            antecedent: 'Abstract concepts, non-visual learning materials.',
+            behaviour: 'Loses focus, starts doodling, asks unrelated questions.',
+            consequence: 'Use visual aids and concrete examples. Incorporate drawing into learning activities.'
+        },
+        grades: { english: 4, math: 5, science: 4 },
+        batches: { mind: 'A', cbcs: 'C', lifeSkills: 'B' }
+    }
   ];
   
   export const sessions = {
@@ -82,10 +143,14 @@ export const mentors = [
       { id: 'eng-4-grammar-1', subject: 'English', grade: 4, name: 'Nouns and Verbs', concepts: ['Identifying Nouns', 'Identifying Verbs'], techniques: ['Sentence Diagramming (basic)', 'Worksheet Practice'] },
       { id: 'math-4-multiply', subject: 'Math', grade: 4, name: 'Multiplication Facts (0-12)', concepts: ['Commutative Property', 'Fact Families'], techniques: ['Flashcards', 'Online Games'] },
       { id: 'sci-4-plants', subject: 'Science', grade: 4, name: 'Parts of a Plant', concepts: ['Roots', 'Stem', 'Leaves', 'Flower'], techniques: ['Diagram Labeling', 'Nature Walk Observation'] },
+      { id: 'eng-4-poetry', subject: 'English', grade: 4, name: 'Poetry Basics', concepts: ['Rhyme', 'Rhythm', 'Stanzas'], techniques: ['Read Aloud', 'Pattern Recognition'] },
+      { id: 'math-4-geometry', subject: 'Math', grade: 4, name: '2D Shapes', concepts: ['Angles', 'Sides', 'Symmetry'], techniques: ['Shape Drawing', 'Pattern Blocks'] },
       // Grade 5
       { id: 'eng-5-writing-p', subject: 'English', grade: 5, name: 'Paragraph Writing', concepts: ['Topic Sentence', 'Supporting Sentences', 'Concluding Sentence'], techniques: ['Graphic Organizers', 'Peer Review'] },
       { id: 'math-5-fractions', subject: 'Math', grade: 5, name: 'Introduction to Fractions', concepts: ['Numerator', 'Denominator', 'Equivalent Fractions'], techniques: ['Manipulatives (fraction circles)', 'Number Line'] },
       { id: 'sci-5-ecosystems', subject: 'Science', grade: 5, name: 'Ecosystems', concepts: ['Producers', 'Consumers', 'Decomposers'], techniques: ['Food Web Diagram', 'Group Discussion'] },
+      { id: 'sci-5-weather', subject: 'Science', grade: 5, name: 'Weather Patterns', concepts: ['Temperature', 'Precipitation', 'Wind'], techniques: ['Weather Journal', 'Simple Experiments'] },
+      { id: 'math-5-measurement', subject: 'Math', grade: 5, name: 'Units of Measurement', concepts: ['Length', 'Weight', 'Volume'], techniques: ['Practical Measuring', 'Unit Conversion'] },
       // Grade 6
       { id: 'eng-6-figurative', subject: 'English', grade: 6, name: 'Figurative Language', concepts: ['Simile', 'Metaphor', 'Personification'], techniques: ['Poetry Analysis', 'Creative Writing'] },
       { id: 'math-6-decimals', subject: 'Math', grade: 6, name: 'Decimal Operations', concepts: ['Addition', 'Subtraction', 'Multiplication'], techniques: ['Real-world Problems (money)', 'Grid Paper Visualization'] },
@@ -104,6 +169,9 @@ export const mentors = [
       { id: 'body-track', name: 'Track & Field Basics', type: 'Body' },
       { id: 'body-free', name: 'Free Play (Outdoor)', type: 'Body' },
       { id: 'body-circuit', name: 'Circuit Training', type: 'Body' },
+      { id: 'body-swim', name: 'Swimming Basics', type: 'Body' },
+      { id: 'body-martial', name: 'Martial Arts Fundamentals', type: 'Body' },
+      { id: 'body-balance', name: 'Balance & Coordination', type: 'Body' },
     ],
     mind: [
       { id: 'mind-meditate', name: 'Guided Meditation', type: 'Mind' },
@@ -114,6 +182,9 @@ export const mentors = [
       { id: 'mind-creative', name: 'Creative Visualization', type: 'Mind' },
       { id: 'mind-journal', name: 'Reflective Journaling', type: 'Mind' },
       { id: 'mind-debate', name: 'Debate Club (Intro)', type: 'Mind' },
+      { id: 'mind-chess', name: 'Chess Fundamentals', type: 'Mind' },
+      { id: 'mind-mindmap', name: 'Mind Mapping', type: 'Mind' },
+      { id: 'mind-emotion', name: 'Emotional Intelligence', type: 'Mind' },
    ],
     cbcs: [ // Choice Based Credit System Activities? (Assuming activity based)
       { id: 'cbcs-art', name: 'Painting & Drawing', type: 'CBCS' },
@@ -170,29 +241,56 @@ export const mentors = [
       },
       // ... plans for other students (s3, s4, s5)
     },
-    // ... plans for other weeks
+    '2025-04-21': { // Week after the existing one
+        s6: {
+            english: ['eng-6-figurative'],
+            math: ['math-6-decimals', 'math-5-measurement'],
+            science: ['sci-6-energy'],
+            body: ['body-martial', 'body-balance', 'body-yoga'],
+            mind: ['mind-chess', 'mind-emotion', 'mind-mindmap'],
+            cbcs: ['cbcs-drama'],
+            lifeSkills: ['ls-collab', 'ls-resolve']
+        },
+        s7: {
+            english: ['eng-4-poetry', 'eng-4-read-comp'],
+            math: ['math-4-geometry', 'math-4-multiply'],
+            science: ['sci-4-plants'],
+            body: ['body-swim', 'body-balance', 'body-dance'],
+            mind: ['mind-puzzle', 'mind-memory'],
+            cbcs: ['cbcs-art'],
+            lifeSkills: ['ls-comm']
+        }
+    }
   };
   
   // Example Daily Report Structure
   export const initialDailyReports = [
-      // Reports are typically added, not predefined, but here's an example object structure
-      // {
-      //   date: '2025-04-10', // Today's date
-      //   studentId: 's1',
-      //   mentorId: 'm1', // Mentor who observed/reported
-      //   demeanor: 'Generally positive, participated well in yoga, quiet during reading.',
-      //   sessionsCompleted: {
-      //     body: { sessionId: 'body-yoga', details: 'Followed instructions well, seemed relaxed.' },
-      //     mind: { sessionId: 'mind-meditate', details: 'Stayed calm for 5 minutes.'},
-      //     intellect: {
-      //       english: { sessionId: 'eng-5-writing-p', details: 'Completed topic sentence exercise.' },
-      //       math: null, // No math session recorded today
-      //       science: { sessionId: 'sci-5-ecosystems', details: 'Asked good questions about producers.'},
-      //     },
-      //     cbcs: null,
-      //     lifeSkills: { sessionId: 'ls-comm', details: 'Practiced active listening in pair activity.'}
-      //   }
-      // }
+    {
+        id: 'dr1',
+        date: '2025-04-14',
+        studentId: 's6',
+        mentorId: 'm2',
+        isPublished: true,
+        demeanor: 'Showed great enthusiasm in martial arts class. Remained focused during math.',
+        completedSessions: {
+            body: { sessionId: 'body-martial', details: 'Learned basic stances and movements' },
+            mind: { sessionId: 'mind-chess', details: 'Successfully completed basic chess strategies' },
+            math: { sessionId: 'math-6-decimals', details: 'Completed worksheet with 85% accuracy' }
+        }
+    },
+    {
+        id: 'dr2',
+        date: '2025-04-14',
+        studentId: 's7',
+        mentorId: 'm3',
+        isPublished: true,
+        demeanor: 'Very creative during poetry session. Needed support in geometry.',
+        completedSessions: {
+            english: { sessionId: 'eng-4-poetry', details: 'Wrote a creative poem about space' },
+            math: { sessionId: 'math-4-geometry', details: 'Struggled with angle measurement' },
+            body: { sessionId: 'body-swim', details: 'Gaining confidence in water' }
+        }
+    }
   ];
   
   // Helper function to get student names from IDs
@@ -218,3 +316,7 @@ export const mentors = [
   export const getAcademicSessionDetails = (sessionId) => {
       return sessions.academic.find(s => s.id === sessionId);
   }
+
+  export const initialSettings = {
+      sessionsPerDay: 5
+  };

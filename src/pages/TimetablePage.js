@@ -18,18 +18,9 @@ import {
     OutlinedInput,
     Grid 
 } from '@mui/material';
-import { getStudentNames, getMentorName } from '../data/mockData';
+import { getStudentNames } from '../data/mockData';
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-const slots = ['session1', 'session2', 'session3', 'session4', 'session5', 'session6'];
-const slotLabels = {
-    session1: 'Session 1',
-    session2: 'Session 2',
-    session3: 'Session 3',
-    session4: 'Session 4',
-    session5: 'Session 5',
-    session6: 'Session 6'
-};
 const sessionTypes = [
     { id: 'body', label: 'Body' },
     { id: 'mind', label: 'Mind' },
@@ -41,41 +32,49 @@ const sessionTypes = [
 ];
 
 function TimetablePage({ data, updateTimetable }) {
-    const { students, mentors, timetable } = data;
-    const [localTimetable, setLocalTimetable] = useState(timetable);
+    const { students, mentors, timetable, settings } = data;
+    const [filterMentor, setFilterMentor] = useState('');
     const [editingCell, setEditingCell] = useState(null);
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [selectedSessionType, setSelectedSessionType] = useState('');
-    const [filterMentor, setFilterMentor] = useState('');
     const [isAddingSession, setIsAddingSession] = useState(false);
 
-    const getAvailableStudents = (day, slot) => {
-        const assignments = Array.isArray(localTimetable[day]?.[slot]) 
-            ? localTimetable[day][slot] 
-            : [];
-        
-        // Get all student IDs assigned to any session in this cell
-        const assignedStudentIds = assignments
-            .flatMap(a => a.studentIds || []);
+    // Generate slots dynamically based on settings
+    const slots = Array.from(
+        { length: settings?.sessionsPerDay || 5 }, 
+        (_, i) => `session${i + 1}`
+    );
 
-        // Filter out students who are already assigned to any session in this cell
-        return students.filter(student => !assignedStudentIds.includes(student.id));
+    // Get mentor-specific timetable
+    const getMentorTimetable = (mentorId) => {
+        const mentorTimetable = {};
+        
+        // Initialize empty timetable structure
+        days.forEach(day => {
+            mentorTimetable[day] = {};
+            slots.forEach(slot => {
+                mentorTimetable[day][slot] = [];
+            });
+        });
+
+        // Fill with mentor's sessions
+        days.forEach(day => {
+            slots.forEach(slot => {
+                const cellSessions = timetable[day]?.[slot] || [];
+                const mentorSessions = cellSessions.filter(
+                    session => session.mentorId === mentorId
+                );
+                if (mentorSessions.length > 0) {
+                    mentorTimetable[day][slot] = mentorSessions;
+                }
+            });
+        });
+
+        return mentorTimetable;
     };
 
-    const handleCellClick = (day, slot) => {
-        setEditingCell({ day, slot });
-        
-        const assignments = Array.isArray(localTimetable[day]?.[slot]) 
-            ? localTimetable[day][slot] 
-            : [];
-        
-        const currentAssignment = assignments.find(
-            assignment => assignment?.mentorId === filterMentor
-        );
-
-        setSelectedStudents(currentAssignment?.studentIds || []);
-        setSelectedSessionType(currentAssignment?.sessionType || '');
-    };
+    // Get currently visible timetable based on selected mentor
+    const visibleTimetable = filterMentor ? getMentorTimetable(filterMentor) : {};
 
     const handleAddSession = (day, slot) => {
         setEditingCell({ day, slot });
@@ -85,19 +84,20 @@ function TimetablePage({ data, updateTimetable }) {
     };
 
     const handleRemoveSession = (day, slot, index) => {
-        const updatedTimetable = { ...localTimetable };
+        const updatedTimetable = { ...timetable };
         updatedTimetable[day][slot] = updatedTimetable[day][slot].filter(
             (_, i) => i !== index
         );
-        setLocalTimetable(updatedTimetable);
         updateTimetable(updatedTimetable);
     };
 
+    // Update handleSaveAssignment to maintain other mentors' sessions
     const handleSaveAssignment = () => {
         if (!editingCell || !filterMentor) return;
         const { day, slot } = editingCell;
-        const updatedTimetable = { ...localTimetable };
+        const updatedTimetable = { ...timetable };
         
+        // Initialize if needed
         if (!updatedTimetable[day]) {
             updatedTimetable[day] = {};
         }
@@ -105,6 +105,12 @@ function TimetablePage({ data, updateTimetable }) {
             updatedTimetable[day][slot] = [];
         }
 
+        // Remove existing session for this mentor
+        updatedTimetable[day][slot] = updatedTimetable[day][slot].filter(
+            session => session.mentorId !== filterMentor
+        );
+
+        // Add new session if there are selected students
         if (selectedStudents.length > 0 && selectedSessionType) {
             updatedTimetable[day][slot].push({
                 mentorId: filterMentor,
@@ -113,7 +119,6 @@ function TimetablePage({ data, updateTimetable }) {
             });
         }
 
-        setLocalTimetable(updatedTimetable);
         updateTimetable(updatedTimetable);
         setEditingCell(null);
         setIsAddingSession(false);
@@ -128,13 +133,14 @@ function TimetablePage({ data, updateTimetable }) {
         setSelectedSessionType('');
     };
 
+    // Update renderCellContent to only show current mentor's sessions
     const renderCellContent = (day, slot) => {
-        const assignments = Array.isArray(localTimetable[day]?.[slot]) 
-            ? localTimetable[day][slot] 
-            : [];
+        const assignments = visibleTimetable[day]?.[slot] || [];
 
         if (editingCell && editingCell.day === day && editingCell.slot === slot && isAddingSession) {
-            const availableStudents = getAvailableStudents(day, slot);
+            const availableStudents = students.filter(student => 
+                !assignments.flatMap(a => a.studentIds || []).includes(student.id)
+            );
             
             return (
                 <Box p={1} border={1} borderColor="primary.main" borderRadius={1}>
@@ -216,7 +222,8 @@ function TimetablePage({ data, updateTimetable }) {
                             p: 0.5,
                             border: '1px solid',
                             borderColor: 'divider',
-                            borderRadius: 1
+                            borderRadius: 1,
+                            bgcolor: 'background.paper'
                         }}
                     >
                         <Box>
@@ -227,15 +234,13 @@ function TimetablePage({ data, updateTimetable }) {
                                 {getStudentNames(assignment.studentIds, students)}
                             </Typography>
                         </Box>
-                        {assignment.mentorId === filterMentor && (
-                            <Button 
-                                size="small" 
-                                color="error" 
-                                onClick={() => handleRemoveSession(day, slot, index)}
-                            >
-                                ×
-                            </Button>
-                        )}
+                        <Button 
+                            size="small" 
+                            color="error" 
+                            onClick={() => handleRemoveSession(day, slot, index)}
+                        >
+                            ×
+                        </Button>
                     </Box>
                 ))}
                 {filterMentor && (
@@ -257,6 +262,7 @@ function TimetablePage({ data, updateTimetable }) {
         <Box>
             <Typography variant="h4" gutterBottom>Timetable Assignment</Typography>
             
+            {/* Mentor selector */}
             <Box mb={3}>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} sm={4}>
@@ -281,34 +287,41 @@ function TimetablePage({ data, updateTimetable }) {
                 </Grid>
             </Box>
 
-            <Paper elevation={3}>
-                <TableContainer>
-                    <Table size="small" stickyHeader>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Time Session</TableCell>
-                                {days.map(day => <TableCell key={day} align="center" sx={{textTransform: 'capitalize'}}>{day}</TableCell>)}
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {slots.map(slot => (
-                                <TableRow key={slot}>
-                                    <TableCell component="th" scope="row">Session {slot.substring(7)}</TableCell>
-                                    {days.map(day => (
-                                        <TableCell 
-                                            key={`${day}-${slot}`} 
-                                            align="center" 
-                                            sx={{ minWidth: 150, verticalAlign: 'top', border: 1, borderColor: 'divider'}}
-                                        >
-                                            {renderCellContent(day, slot)}
-                                        </TableCell>
-                                    ))}
+            {/* Show timetable only when mentor is selected */}
+            {filterMentor ? (
+                <Paper elevation={3}>
+                    <TableContainer>
+                        <Table size="small" stickyHeader>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Time Session</TableCell>
+                                    {days.map(day => <TableCell key={day} align="center" sx={{textTransform: 'capitalize'}}>{day}</TableCell>)}
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper>
+                            </TableHead>
+                            <TableBody>
+                                {slots.map(slot => (
+                                    <TableRow key={slot}>
+                                        <TableCell component="th" scope="row">Session {slot.substring(7)}</TableCell>
+                                        {days.map(day => (
+                                            <TableCell 
+                                                key={`${day}-${slot}`} 
+                                                align="center" 
+                                                sx={{ minWidth: 150, verticalAlign: 'top', border: 1, borderColor: 'divider'}}
+                                            >
+                                                {renderCellContent(day, slot)}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Paper>
+            ) : (
+                <Typography variant="h6" align="center" sx={{ mt: 4 }}>
+                    Please select a mentor to view or edit their timetable
+                </Typography>
+            )}
         </Box>
     );
 }
