@@ -21,7 +21,15 @@ import {
 import { getStudentNames, getMentorName } from '../data/mockData';
 
 const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-const slots = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5'];
+const slots = ['session1', 'session2', 'session3', 'session4', 'session5', 'session6'];
+const slotLabels = {
+    session1: 'Session 1',
+    session2: 'Session 2',
+    session3: 'Session 3',
+    session4: 'Session 4',
+    session5: 'Session 5',
+    session6: 'Session 6'
+};
 const sessionTypes = [
     { id: 'body', label: 'Body' },
     { id: 'mind', label: 'Mind' },
@@ -39,37 +47,50 @@ function TimetablePage({ data, updateTimetable }) {
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [selectedSessionType, setSelectedSessionType] = useState('');
     const [filterMentor, setFilterMentor] = useState('');
+    const [isAddingSession, setIsAddingSession] = useState(false);
 
     const getAvailableStudents = (day, slot) => {
         const assignments = Array.isArray(localTimetable[day]?.[slot]) 
             ? localTimetable[day][slot] 
             : [];
         
-        // Get all assigned student IDs in this slot except current mentor's students
+        // Get all student IDs assigned to any session in this cell
         const assignedStudentIds = assignments
-            .filter(a => a.mentorId !== filterMentor)
             .flatMap(a => a.studentIds || []);
 
-        // Return only unassigned students
+        // Filter out students who are already assigned to any session in this cell
         return students.filter(student => !assignedStudentIds.includes(student.id));
     };
 
     const handleCellClick = (day, slot) => {
         setEditingCell({ day, slot });
         
-        // Ensure we're working with an array
         const assignments = Array.isArray(localTimetable[day]?.[slot]) 
             ? localTimetable[day][slot] 
             : [];
         
-        // Find the assignment for the current filtered mentor
         const currentAssignment = assignments.find(
             assignment => assignment?.mentorId === filterMentor
         );
 
-        // Set the selected values from the current assignment or defaults
         setSelectedStudents(currentAssignment?.studentIds || []);
         setSelectedSessionType(currentAssignment?.sessionType || '');
+    };
+
+    const handleAddSession = (day, slot) => {
+        setEditingCell({ day, slot });
+        setIsAddingSession(true);
+        setSelectedStudents([]);
+        setSelectedSessionType('');
+    };
+
+    const handleRemoveSession = (day, slot, index) => {
+        const updatedTimetable = { ...localTimetable };
+        updatedTimetable[day][slot] = updatedTimetable[day][slot].filter(
+            (_, i) => i !== index
+        );
+        setLocalTimetable(updatedTimetable);
+        updateTimetable(updatedTimetable);
     };
 
     const handleSaveAssignment = () => {
@@ -77,7 +98,6 @@ function TimetablePage({ data, updateTimetable }) {
         const { day, slot } = editingCell;
         const updatedTimetable = { ...localTimetable };
         
-        // Initialize nested structure if needed
         if (!updatedTimetable[day]) {
             updatedTimetable[day] = {};
         }
@@ -85,12 +105,6 @@ function TimetablePage({ data, updateTimetable }) {
             updatedTimetable[day][slot] = [];
         }
 
-        // Remove existing assignment for this mentor
-        updatedTimetable[day][slot] = updatedTimetable[day][slot].filter(
-            assignment => assignment.mentorId !== filterMentor
-        );
-
-        // Add new assignment if valid
         if (selectedStudents.length > 0 && selectedSessionType) {
             updatedTimetable[day][slot].push({
                 mentorId: filterMentor,
@@ -102,25 +116,24 @@ function TimetablePage({ data, updateTimetable }) {
         setLocalTimetable(updatedTimetable);
         updateTimetable(updatedTimetable);
         setEditingCell(null);
+        setIsAddingSession(false);
         setSelectedStudents([]);
         setSelectedSessionType('');
     };
 
     const handleCancelAssignment = () => {
         setEditingCell(null);
+        setIsAddingSession(false);
         setSelectedStudents([]);
         setSelectedSessionType('');
     };
 
     const renderCellContent = (day, slot) => {
-        // Ensure assignments is always an array
         const assignments = Array.isArray(localTimetable[day]?.[slot]) 
             ? localTimetable[day][slot] 
             : [];
-        
-        const assignment = assignments.find(a => a.mentorId === filterMentor);
 
-        if (editingCell && editingCell.day === day && editingCell.slot === slot) {
+        if (editingCell && editingCell.day === day && editingCell.slot === slot && isAddingSession) {
             const availableStudents = getAvailableStudents(day, slot);
             
             return (
@@ -190,33 +203,53 @@ function TimetablePage({ data, updateTimetable }) {
             );
         }
 
-        if (assignment) {
-            const sessionTypeLabel = sessionTypes.find(
-                t => t.id === assignment.sessionType
-            )?.label;
-            return (
-                <Box 
-                    onClick={() => handleCellClick(day, slot)} 
-                    sx={{ cursor: 'pointer', p: 0.5 }}
-                >
-                    <Typography variant="caption" display="block" color="primary">
-                        {sessionTypeLabel}
-                    </Typography>
-                    <Typography variant="caption" display="block">
-                        {getStudentNames(assignment.studentIds, students)}
-                    </Typography>
-                </Box>
-            );
-        }
-
         return (
-            <Button 
-                size="small" 
-                variant="outlined" 
-                onClick={() => handleCellClick(day, slot)}
-            >
-                +
-            </Button>
+            <Box>
+                {assignments.map((assignment, index) => (
+                    <Box 
+                        key={`${assignment.mentorId}-${index}`}
+                        sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            mb: 1,
+                            p: 0.5,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 1
+                        }}
+                    >
+                        <Box>
+                            <Typography variant="caption" display="block" color="primary">
+                                {sessionTypes.find(t => t.id === assignment.sessionType)?.label}
+                            </Typography>
+                            <Typography variant="caption" display="block">
+                                {getStudentNames(assignment.studentIds, students)}
+                            </Typography>
+                        </Box>
+                        {assignment.mentorId === filterMentor && (
+                            <Button 
+                                size="small" 
+                                color="error" 
+                                onClick={() => handleRemoveSession(day, slot, index)}
+                            >
+                                ×
+                            </Button>
+                        )}
+                    </Box>
+                ))}
+                {filterMentor && (
+                    <Button 
+                        size="small" 
+                        variant="outlined" 
+                        fullWidth
+                        onClick={() => handleAddSession(day, slot)}
+                        sx={{ mt: 1 }}
+                    >
+                        + Add Session
+                    </Button>
+                )}
+            </Box>
         );
     };
 
@@ -253,14 +286,14 @@ function TimetablePage({ data, updateTimetable }) {
                     <Table size="small" stickyHeader>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Time Slot</TableCell>
+                                <TableCell>Time Session</TableCell>
                                 {days.map(day => <TableCell key={day} align="center" sx={{textTransform: 'capitalize'}}>{day}</TableCell>)}
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {slots.map(slot => (
                                 <TableRow key={slot}>
-                                    <TableCell component="th" scope="row">Slot {slot.substring(4)}</TableCell>
+                                    <TableCell component="th" scope="row">Session {slot.substring(7)}</TableCell>
                                     {days.map(day => (
                                         <TableCell 
                                             key={`${day}-${slot}`} 

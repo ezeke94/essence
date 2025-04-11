@@ -136,22 +136,14 @@ export const mentors = [
   // Example Timetable Structure (Simpler: Assigns Mentor + Students to Slot)
   export const initialTimetable = {
     monday: {
-      slot1: { mentorId: 'm1', studentIds: ['s1', 's3'] },
-      slot2: { mentorId: 'm2', studentIds: ['s2', 's5'] },
-      slot3: { mentorId: 'm3', studentIds: ['s4'] },
-      slot4: null, // Unassigned
-      slot5: { mentorId: 'm1', studentIds: ['s2'] },
+        session1: [],
+        session2: [],
+        session3: [],
+        session4: [],
+        session5: [],
+        session6: []
     },
-    tuesday: {
-      slot1: { mentorId: 'm4', studentIds: ['s4', 's5'] },
-      slot2: { mentorId: 'm1', studentIds: ['s1'] },
-      slot3: { mentorId: 'm2', studentIds: ['s2', 's3'] },
-      slot4: { mentorId: 'm3', studentIds: ['s1', 's4'] },
-      slot5: null,
-    },
-    wednesday: { /* ... more assignments ... */ },
-    thursday: { /* ... more assignments ... */ },
-    friday: { /* ... more assignments ... */ },
+    // ...existing days...
   };
   
   // Example Weekly Plan Structure (Assigns specific sessions to students for a week)

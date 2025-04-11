@@ -106,8 +106,8 @@ function DailyReportPage({ data, addDailyReport }) {
         const selectedOption = options.find(opt => opt.id === state.sessionId) || null;
 
         return (
-            <Grid container spacing={1} alignItems="flex-end" mb={2}>
-                <Grid item xs={12} sm={5}>
+            <Grid container direction="column" spacing={1} sx={{ mb: 3 }}> {/* Added margin bottom */}
+                <Grid item>
                     <Autocomplete
                         size="small"
                         options={options}
@@ -118,21 +118,32 @@ function DailyReportPage({ data, addDailyReport }) {
                         }}
                         isOptionEqualToValue={(option, value) => option.id === value.id}
                         disabled={!selectedStudentId}
-                        sx={{ minWidth: 220 }}  // Default width applied
+                        sx={{ minWidth: 220 }}
                         renderInput={(params) => <TextField {...params} label={`${label} Session`} />}
                     />
                 </Grid>
-                <Grid item xs={12} sm={7}>
+                <Grid item>
                     <TextField
                         label="Details / Observations"
                         variant="standard"
                         fullWidth
                         multiline
                         minRows={1}
-                        size="small"
+                        maxRows={4}
                         value={state.details}
                         onChange={(e) => setState(prev => ({ ...prev, details: e.target.value }))}
                         disabled={!state.sessionId || !selectedStudentId}
+                        sx={{
+                            width: '100%',
+                            '& .MuiInputBase-root': {
+                                width: '100%',
+                                overflow: 'auto'
+                            },
+                            '& .MuiInputBase-input': {
+                                width: '100%',
+                                minHeight: '24px'
+                            }
+                        }}
                     />
                 </Grid>
             </Grid>
@@ -141,27 +152,84 @@ function DailyReportPage({ data, addDailyReport }) {
 
 
     return (
-        <Box 
-            component="form" 
-            onSubmit={handleSubmit}
-            sx={{ 
-                maxWidth: 1200, 
-                mx: 'auto', 
-                p: 3 
-            }}
-        >
+        <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
             <Typography 
                 variant="h4" 
                 gutterBottom 
-                sx={{ 
-                    mb: 4,
-                    fontWeight: 'medium',
-                    color: 'primary.main'
-                }}
+                sx={{ mb: 4, fontWeight: 'medium', color: 'primary.main' }}
             >
                 Daily Report Entry
             </Typography>
 
+            {/* Filters Section */}
+            <Paper 
+                elevation={2} 
+                sx={{ 
+                    p: 3, 
+                    mb: 3, 
+                    backgroundColor: 'background.paper',
+                    borderRadius: 2
+                }}
+            >
+                <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} sm={4}>
+                        <DatePicker
+                            label="Date"
+                            value={selectedDate}
+                            onChange={(newValue) => setSelectedDate(newValue)}
+                            renderInput={(params) => 
+                                <TextField 
+                                    {...params} 
+                                    fullWidth 
+                                    size="small"
+                                />
+                            }
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <FormControl 
+                            fullWidth 
+                            required 
+                            size="small"
+                            sx={{ minWidth: 220 }}  // Added default minimum width
+                        >
+                            <InputLabel>Student</InputLabel>
+                            <Select
+                                value={selectedStudentId}
+                                label="Student"
+                                onChange={(e) => setSelectedStudentId(e.target.value)}
+                            >
+                                <MenuItem value=""><em>Select Student</em></MenuItem>
+                                {students.map(s => (
+                                    <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <FormControl 
+                            fullWidth 
+                            required 
+                            size="small"
+                            sx={{ minWidth: 220 }}  // Added default minimum width
+                        >
+                            <InputLabel>Reporting Mentor</InputLabel>
+                            <Select
+                                value={selectedMentorId}
+                                label="Reporting Mentor"
+                                onChange={(e) => setSelectedMentorId(e.target.value)}
+                            >
+                                <MenuItem value=""><em>Select Mentor</em></MenuItem>
+                                {mentors.map(m => (
+                                    <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                </Grid>
+            </Paper>
+
+            {/* Main Content */}
             <Paper 
                 elevation={3} 
                 sx={{ 
@@ -170,185 +238,116 @@ function DailyReportPage({ data, addDailyReport }) {
                     borderRadius: 2
                 }}
             >
-                <Grid container spacing={4}>
-                    {/* Top Section: Date, Student & Reporting Mentor */}
-                    <Grid item xs={12} container spacing={2}>
-                        <Grid item xs={12} sm={4}>
-                            <DatePicker
-                                label="Date"
-                                value={selectedDate}
-                                onChange={(newValue) => setSelectedDate(newValue)}
-                                renderInput={(params) => 
-                                    <TextField 
-                                        {...params} 
-                                        fullWidth 
-                                        sx={{ backgroundColor: 'background.default' }}
-                                    />
-                                }
+                <Box component="form" onSubmit={handleSubmit}>
+                    <Grid container spacing={2}>
+                        {/* Overall Demeanor Section */}
+                        <Grid item xs={12} sx={{ width: '100%' }}>
+                            <TextField
+                                label="Overall Demeanor / General Notes"
+                                fullWidth
+                                multiline
+                                minRows={4}
+                                maxRows={8}
+                                value={demeanor}
+                                onChange={(e) => setDemeanor(e.target.value)}
+                                disabled={!selectedStudentId}
+                                sx={{ 
+                                    width: '100%',
+                                    backgroundColor: 'background.default',
+                                    '& .MuiOutlinedInput-root': {
+                                        width: '100%',
+                                        '&.Mui-disabled': {
+                                            backgroundColor: 'action.disabledBackground'
+                                        }
+                                    },
+                                    '& .MuiInputBase-root': {
+                                        width: '100%',
+                                        resize: 'vertical',
+                                        overflow: 'auto'
+                                    },
+                                    '& .MuiInputBase-inputMultiline': {
+                                        width: '100%'
+                                    }
+                                }}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <FormControl fullWidth required sx={{ minWidth: 220 }}>
-                                <InputLabel>Student</InputLabel>
-                                <Select
-                                    value={selectedStudentId}
-                                    label="Student"
-                                    onChange={(e) => setSelectedStudentId(e.target.value)}
+
+                        {/* New container for Completed Sessions & Details */}
+                        <Grid item xs={12} sx={{ width: '100%' }}>
+                            <Box sx={{ mt: 4 }}>
+                                <Typography 
+                                    variant="h6" 
                                     sx={{ 
-                                        backgroundColor: 'background.default',
-                                        '& .MuiSelect-select': {
-                                            padding: '16px',
-                                            minHeight: '56px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            '& em': {
-                                                fontStyle: 'normal',
-                                                color: 'text.secondary',
-                                                padding: '2px 0'
-                                            }
-                                        }
+                                        mb: 3,
+                                        fontWeight: 'medium',
+                                        color: 'primary.main'
                                     }}
                                 >
-                                    <MenuItem value="" sx={{ py: 1.5 }}>
-                                        <em>Select Student</em>
-                                    </MenuItem>
-                                    {students.map(s => 
-                                        <MenuItem key={s.id} value={s.id} sx={{ py: 1.5 }}>
-                                            {s.name}
-                                        </MenuItem>
-                                    )}
-                                </Select>
-                            </FormControl>
+                                    Completed Sessions & Details
+                                </Typography>
+                                <Box sx={{ width: '100%' }}>
+                                    {/* Body & Mind Section */}
+                                    <Box sx={{ mb: 4, width: '100%' }}>
+                                        <Typography 
+                                            variant="subtitle1" 
+                                            sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}
+                                        >
+                                            Body & Mind
+                                        </Typography>
+                                        {renderSessionInput('Body', 'body', completedBody, setCompletedBody)}
+                                        {renderSessionInput('Mind', 'mind', completedMind, setCompletedMind)}
+                                    </Box>
+
+                                    {/* Additional Activities Section */}
+                                    <Box sx={{ mb: 4, width: '100%' }}>
+                                        <Typography 
+                                            variant="subtitle1" 
+                                            sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}
+                                        >
+                                            Additional Activities
+                                        </Typography>
+                                        {renderSessionInput('CBCS', 'cbcs', completedCbcs, setCompletedCbcs)}
+                                        {renderSessionInput('Life Skills', 'lifeSkills', completedLifeSkills, setCompletedLifeSkills)}
+                                    </Box>
+
+                                    {/* Intellect Section */}
+                                    <Box sx={{ mb: 4, width: '100%' }}>
+                                        <Typography 
+                                            variant="subtitle1" 
+                                            sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}
+                                        >
+                                            Intellect (Academic)
+                                        </Typography>
+                                        {renderSessionInput('English', 'english', completedEnglish, setCompletedEnglish)}
+                                        {renderSessionInput('Math', 'math', completedMath, setCompletedMath)}
+                                        {renderSessionInput('Science', 'science', completedScience, setCompletedScience)}
+                                    </Box>
+                                </Box>
+                            </Box>
                         </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <FormControl fullWidth required sx={{ minWidth: 220 }}>
-                                <InputLabel>Reporting Mentor</InputLabel>
-                                <Select
-                                    value={selectedMentorId}
-                                    label="Reporting Mentor"
-                                    onChange={(e) => setSelectedMentorId(e.target.value)}
+
+                        {/* Submit Button */}
+                        <Grid item xs={12}>
+                            <Divider sx={{ my: 2 }} />
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                                <Button 
+                                    type="submit" 
+                                    variant="contained" 
+                                    color="primary" 
+                                    disabled={!selectedStudentId || !selectedMentorId}
                                     sx={{ 
-                                        backgroundColor: 'background.default',
-                                        '& .MuiSelect-select': {
-                                            padding: '16px',
-                                            minHeight: '56px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            '& em': {
-                                                fontStyle: 'normal',
-                                                color: 'text.secondary',
-                                                padding: '2px 0'
-                                            }
-                                        }
+                                        minWidth: 200,
+                                        py: 1.5,
+                                        textTransform: 'none',
+                                        fontSize: '1.1rem'
                                     }}
                                 >
-                                    <MenuItem value="" sx={{ py: 1.5 }}>
-                                        <em>Select Mentor</em>
-                                    </MenuItem>
-                                    {mentors.map(m => 
-                                        <MenuItem key={m.id} value={m.id} sx={{ py: 1.5 }}>
-                                            {m.name}
-                                        </MenuItem>
-                                    )}
-                                </Select>
-                            </FormControl>
+                                    Submit Daily Report
+                                </Button>
+                            </Box>
                         </Grid>
                     </Grid>
-
-                    {/* Overall Demeanor Section */}
-                    <Grid item xs={12}>
-                        <TextField
-                            label="Overall Demeanor / General Notes"
-                            fullWidth
-                            multiline
-                            rows={3}
-                            value={demeanor}
-                            onChange={(e) => setDemeanor(e.target.value)}
-                            disabled={!selectedStudentId}
-                            sx={{ 
-                                backgroundColor: 'background.default',
-                                '& .MuiOutlinedInput-root': {
-                                    '&.Mui-disabled': {
-                                        backgroundColor: 'action.disabledBackground'
-                                    }
-                                }
-                            }}
-                        />
-                    </Grid>
-
-                    {/* Completed Sessions & Details */}
-                    <Grid item xs={12}>
-                        <Divider sx={{ my: 2 }} />
-                        <Typography 
-                            variant="h6" 
-                            sx={{ 
-                                mb: 3,
-                                fontWeight: 'medium',
-                                color: 'primary.main'
-                            }}
-                        >
-                            Completed Sessions & Details
-                        </Typography>
-                    </Grid>
-
-                    {/* Grouping the sections in a Grid container with three columns */}
-                    <Grid item xs={12}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
-                                <Typography 
-                                    variant="subtitle1" 
-                                    sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}
-                                >
-                                    Body & Mind
-                                </Typography>
-                                {renderSessionInput('Body', 'body', completedBody, setCompletedBody)}
-                                {renderSessionInput('Mind', 'mind', completedMind, setCompletedMind)}
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <Typography 
-                                    variant="subtitle1" 
-                                    sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}
-                                >
-                                    Additional Activities
-                                </Typography>
-                                {renderSessionInput('CBCS', 'cbcs', completedCbcs, setCompletedCbcs)}
-                                {renderSessionInput('Life Skills', 'lifeSkills', completedLifeSkills, setCompletedLifeSkills)}
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <Typography 
-                                    variant="subtitle1" 
-                                    sx={{ mb: 2, fontWeight: 'bold', color: 'text.primary' }}
-                                >
-                                    Intellect (Academic)
-                                </Typography>
-                                {renderSessionInput('English', 'english', completedEnglish, setCompletedEnglish)}
-                                {renderSessionInput('Math', 'math', completedMath, setCompletedMath)}
-                                {renderSessionInput('Science', 'science', completedScience, setCompletedScience)}
-                            </Grid>
-                        </Grid>
-                    </Grid>
-
-                    {/* Submit Button */}
-                    <Grid item xs={12}>
-                        <Divider sx={{ my: 2 }} />
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-                            <Button 
-                                type="submit" 
-                                variant="contained" 
-                                color="primary" 
-                                disabled={!selectedStudentId || !selectedMentorId}
-                                sx={{ 
-                                    minWidth: 200,
-                                    py: 1.5,
-                                    textTransform: 'none',
-                                    fontSize: '1.1rem'
-                                }}
-                            >
-                                Submit Daily Report
-                            </Button>
-                        </Box>
-                    </Grid>
-                </Grid>
+                </Box>
             </Paper>
         </Box>
     );
