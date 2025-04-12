@@ -105,11 +105,8 @@ function TimetablePage({ data, updateTimetable }) {
             updatedTimetable[day][slot] = [];
         }
 
-        // Remove existing session for this mentor
-        updatedTimetable[day][slot] = updatedTimetable[day][slot].filter(
-            session => session.mentorId !== filterMentor
-        );
-
+        // Keep existing sessions (removed the filter that was removing current mentor's sessions)
+        
         // Add new session if there are selected students
         if (selectedStudents.length > 0 && selectedSessionType) {
             updatedTimetable[day][slot].push({
