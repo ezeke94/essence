@@ -123,6 +123,9 @@ function App() {
   const updateSettings = (newSettings) => {
     setAppData(prev => ({ ...prev, settings: newSettings }));
   };
+  const updateDailyReports = (reports) => {
+    setAppData(prev => ({ ...prev, dailyReports: reports }));
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -345,7 +348,9 @@ function App() {
                    element={
                      <DailyReportsManagementPage 
                        students={appData.students} 
-                       mentors={appData.mentors} 
+                       mentors={appData.mentors}
+                       reports={appData.dailyReports}
+                       onUpdateReports={updateDailyReports}
                      />
                    } 
                  />

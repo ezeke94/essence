@@ -130,7 +130,7 @@ function ViewReportDialog({ open, onClose, report, students, mentors }) {
     );
 }
 
-function DailyReportsManagementPage({ students, mentors }) {
+function DailyReportsManagementPage({ students, mentors, reports, onUpdateReports }) {
     const [localReports, setLocalReports] = useState([]);
     const [selectedWeek, setSelectedWeek] = useState(new Date());
     const [selectedMentor, setSelectedMentor] = useState('');
@@ -144,7 +144,9 @@ function DailyReportsManagementPage({ students, mentors }) {
 
     const handlePublishReport = (reportId, isPublished) => {
         updateReport(reportId, { isPublished });
-        setLocalReports(getReports());
+        const updatedReports = getReports();
+        setLocalReports(updatedReports);
+        onUpdateReports(updatedReports);  // Add this line
     };
 
     const handleViewReport = (report) => {
