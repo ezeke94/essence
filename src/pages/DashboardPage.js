@@ -1,6 +1,13 @@
 import React from 'react';
 import { Typography, Paper, Box, List, ListItem, ListItemText, Divider, Card, CardContent, Chip } from '@mui/material';
-import { format, getDay, startOfWeek } from 'date-fns'; // Assuming Sunday is start of week for date-fns
+import { 
+  format, 
+  getDay, 
+  startOfWeek, 
+  isBefore, 
+  isWithinInterval, 
+  addMonths 
+} from 'date-fns'; // Assuming Sunday is start of week for date-fns
 import { getMentorName, getAcademicSessionDetails } from '../data/mockData'; // Import helpers
 
 const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']; // Match mock data keys
@@ -32,8 +39,26 @@ const groupAssignmentsByMentor = (assignments) => {
     }, []);
 };
 
+// Add after other helper functions
+const getUpcomingDates = (importantDates = [], today) => {
+    const endOfThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const endOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+    
+    return importantDates.reduce((acc, date) => {
+        const startDate = new Date(date.startDate);
+        if (isBefore(today, startDate)) {
+            if (isWithinInterval(startDate, { start: today, end: endOfThisMonth })) {
+                acc.thisMonth.push(date);
+            } else if (isWithinInterval(startDate, { start: endOfThisMonth, end: endOfNextMonth })) {
+                acc.nextMonth.push(date);
+            }
+        }
+        return acc;
+    }, { thisMonth: [], nextMonth: [] });
+};
+
 function DashboardPage({ data }) {
-    const { students, mentors, timetable, weeklyPlans, sessions } = data;
+    const { students, mentors, timetable, weeklyPlans, sessions, importantDates } = data;
     const today = new Date();
     const todayName = daysOfWeek[getDay(today)]; // Get 'monday', 'tuesday' etc.
     const todayTimetable = timetable[todayName] || {};
@@ -41,6 +66,8 @@ function DashboardPage({ data }) {
     // Find the current week's plan (assuming keys are start date of week, Monday)
     const startOfThisWeek = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
     const currentWeekPlan = weeklyPlans[startOfThisWeek] || {};
+
+    const upcoming = getUpcomingDates(importantDates, today);
 
     // Function to get academic session details
     const getAcademicDetails = (sessionId) => {
@@ -53,6 +80,93 @@ function DashboardPage({ data }) {
             <Typography variant="h4" gutterBottom>
                 Dashboard - Today ({format(today, 'eeee, MMMM do yyyy')})
             </Typography>
+
+            <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
+                <Typography variant="h5" gutterBottom>Upcoming Important Dates</Typography>
+                {upcoming.thisMonth.length === 0 && upcoming.nextMonth.length === 0 ? (
+                    <Typography>No upcoming important dates in the next two months.</Typography>
+                ) : (
+                    <Box sx={{ display: 'flex', gap: 4 }}>
+                        {upcoming.thisMonth.length > 0 && (
+                            <Box flex={1}>
+                                <Typography variant="subtitle1" color="primary" gutterBottom>
+                                    This Month ({format(today, 'MMMM yyyy')})
+                                </Typography>
+                                {upcoming.thisMonth.map((date, index) => (
+                                    <Card key={index} sx={{ mb: 1, p: 1 }}>
+                                        <Typography variant="subtitle2">{date.name}</Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {format(new Date(date.startDate), 'MMM dd')}
+                                            {date.startDate !== date.endDate && 
+                                                ` - ${format(new Date(date.endDate), 'MMM dd')}`}
+                                        </Typography>
+                                        {date.studentsInvolved?.length > 0 && (
+                                            <Box sx={{ mt: 0.5 }}>
+                                                {date.studentsInvolved.length === students.length ? (
+                                                    <Chip 
+                                                        label="ALL" 
+                                                        size="small"
+                                                        color="primary"
+                                                        sx={{ mr: 0.5, mb: 0.5 }}
+                                                    />
+                                                ) : (
+                                                    date.studentsInvolved.map(id => (
+                                                        <Chip 
+                                                            key={id}
+                                                            label={students.find(s => s.id === id)?.name}
+                                                            size="small"
+                                                            sx={{ mr: 0.5, mb: 0.5 }}
+                                                        />
+                                                    ))
+                                                )}
+                                            </Box>
+                                        )}
+                                    </Card>
+                                ))}
+                            </Box>
+                        )}
+                        
+                        {upcoming.nextMonth.length > 0 && (
+                            <Box flex={1}>
+                                <Typography variant="subtitle1" color="primary" gutterBottom>
+                                    Next Month ({format(addMonths(today, 1), 'MMMM yyyy')})
+                                </Typography>
+                                {upcoming.nextMonth.map((date, index) => (
+                                    <Card key={index} sx={{ mb: 1, p: 1 }}>
+                                        <Typography variant="subtitle2">{date.name}</Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {format(new Date(date.startDate), 'MMM dd')}
+                                            {date.startDate !== date.endDate && 
+                                                ` - ${format(new Date(date.endDate), 'MMM dd')}`}
+                                        </Typography>
+                                        {date.studentsInvolved?.length > 0 && (
+                                            <Box sx={{ mt: 0.5 }}>
+                                                {date.studentsInvolved.length === students.length ? (
+                                                    <Chip 
+                                                        label="ALL" 
+                                                        size="small"
+                                                        color="primary"
+                                                        sx={{ mr: 0.5, mb: 0.5 }}
+                                                    />
+                                                ) : (
+                                                    date.studentsInvolved.map(id => (
+                                                        <Chip 
+                                                            key={id}
+                                                            label={students.find(s => s.id === id)?.name}
+                                                            size="small"
+                                                            sx={{ mr: 0.5, mb: 0.5 }}
+                                                        />
+                                                    ))
+                                                )}
+                                            </Box>
+                                        )}
+                                    </Card>
+                                ))}
+                            </Box>
+                        )}
+                    </Box>
+                )}
+            </Paper>
 
             <Paper elevation={3} sx={{ p: 2 }}>
                 <Typography variant="h5" gutterBottom>Today's Schedule</Typography>
